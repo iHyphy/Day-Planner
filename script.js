@@ -1,60 +1,30 @@
-$(document).ready(function () {
-  // listen for save button clicks
-  $('.saveBtn').on('click', function () {
-    // get nearby values
-    var value = $(this).siblings('.description').val();
-    var time = $(this).parent().attr('id');
+$(document).ready(function() {
+  const hours = [
+      "9AM", "10AM", "11AM", "12PM", "1PM", "2PM", "3PM", "4PM", "5PM"
+  ];
 
-    // save in localStorage
-    localStorage.setItem(time, value);
+  const timeBlocks = $('.time-blocks');
 
-    // Show notification that item was saved to localStorage by adding class 'show'
-    $('.notification').addClass('show');
-
-    // Timeout to remove 'show' class after 5 seconds
-    setTimeout(function () {
-      $('.notification').removeClass('show');
-    }, 5000);
-  });
-
-  function hourUpdater() {
-    // get current number of hours
-    var currentHour = dayjs().hour();
-
-    // loop over time blocks
-    $('.time-block').each(function () {
-      var blockHour = parseInt($(this).attr('id').split('-')[1]);
-
-      // check if we've moved past this time
-      if (blockHour < currentHour) {
-        $(this).addClass('past');
-      } else if (blockHour === currentHour) {
-        $(this).removeClass('past');
-        $(this).addClass('present');
-      } else {
-        $(this).removeClass('past');
-        $(this).removeClass('present');
-        $(this).addClass('future');
+  hours.forEach(hour => {
+      const currentHour = dayjs().format('hA');
+      const hourId = hour.replace(/[^\w\s]/gi, '').toLowerCase();
+      let timeBlockClass = 'future';
+      
+      if (hour === currentHour) {
+          timeBlockClass = 'present';
+      } else if (dayjs().isAfter(dayjs(hour, 'hA'))) {
+          timeBlockClass = 'past';
       }
-    });
-  }
 
-  hourUpdater();
-
-  // set up interval to check if current time needs to be updated
-  setInterval(hourUpdater, 15000);
-
-  // load any saved data from localStorage
-  $('#hour-9 .description').val(localStorage.getItem('hour-9'));
-  $('#hour-10 .description').val(localStorage.getItem('hour-10'));
-  $('#hour-11 .description').val(localStorage.getItem('hour-11'));
-  $('#hour-12 .description').val(localStorage.getItem('hour-12'));
-  $('#hour-13 .description').val(localStorage.getItem('hour-13'));
-  $('#hour-14 .description').val(localStorage.getItem('hour-14'));
-  $('#hour-15 .description').val(localStorage.getItem('hour-15'));
-  $('#hour-16 .description').val(localStorage.getItem('hour-16'));
-  $('#hour-17 .description').val(localStorage.getItem('hour-17'));
-
-  // display current day on page
-  $('#currentDay').text(dayjs().format('dddd, MMMM D, YYYY'));
+      const timeBlockHTML = `
+          <div id="hour-${hourId}" class="row time-block ${timeBlockClass}">
+              <div class="col-2 col-md-1 hour text-center py-3">${hour}</div>
+              <textarea class="col-8 col-md-10 description" rows="3"></textarea>
+              <button class="btn saveBtn col-2 col-md-1" aria-label="save">
+                  <i class="fas fa-save" aria-hidden="true"></i>
+              </button>
+          </div>
+      `;
+      timeBlocks.append(timeBlockHTML);
+  });
 });
